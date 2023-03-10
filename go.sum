@@ -1,0 +1,6 @@
+github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ7YPc=
+github.com/go-sql-driver/mysql v1.7.0/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
+github.com/oswaldoooo/gocache-driver v0.0.0-20230310091001-866ede8bebd2 h1:ZJYKi82yeAq5J4aqNG/CVgElP4yiWeowbA2kGlJytxo=
+github.com/oswaldoooo/gocache-driver v0.0.0-20230310091001-866ede8bebd2/go.mod h1:Buj42WMfzJvugPjStvOL6/NCkHrbs/dEkg2cuKQNLMo=
+github.com/oswaldoooo/octools v0.0.0-20230307050127-df571cc3429e h1:kH5Hy0aPBz9+G9KKqd0oO1j4TfsgrHBXo9TAjNGA7ao=
+github.com/oswaldoooo/octools v0.0.0-20230307050127-df571cc3429e/go.mod h1:RCEYExIS71OUGjKdwyBhuKOIeHMjcBQxL6ErFpFNw0o=
