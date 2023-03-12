@@ -74,6 +74,7 @@ func Process(con net.Conn) {
 						case 3:
 							err = gocachedriver.Delete(msg.Key, msg.Zone)
 						case 22:
+							//得到zone中所有key
 							res, err := gocachedriver.GetZoneKeys(msg.Zone)
 							if err == nil {
 								rpy.Content = res
@@ -81,6 +82,13 @@ func Process(con net.Conn) {
 						case 30:
 							//delete zone
 							err = gocachedriver.DropZone(msg.Zone)
+						//进阶功能
+						case 91:
+							//使用默认wordcount计算
+
+						case 911:
+							//使用指定wordcount插件计算
+
 						default:
 							err = fmt.Errorf("unknown command :-(")
 						}

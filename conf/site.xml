@@ -5,4 +5,10 @@
         <port>8001</port>
         <default_db>scalar_db</default_db>
     </gocache>
+    <plugins>
+        <plugin_info>
+            <classname></classname>
+            <filename></filename>
+        </plugin_info>
+    </plugins>
 </scalar>

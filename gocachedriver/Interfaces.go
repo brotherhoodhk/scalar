@@ -65,6 +65,9 @@ func CreateZone(zone string) (err error) {
 			zonemap[zone] = strconv.Itoa(rand.Intn(899999) + 100000)
 			nodemap[zonemap[zone]] = make(map[string]int)
 			_, err = toolsbox.FormatList(zonemap, confmappath+"filemap")
+			if err != nil {
+				delete(nodemap, zonemap[zone])
+			}
 		}
 	}
 	return
