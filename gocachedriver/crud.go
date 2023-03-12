@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/oswaldoooo/gocache-driver/basics"
@@ -39,6 +40,10 @@ func GetKey(key string, zoneid string) (res string, err error) {
 	if len(resarr) > 0 {
 		res = resarr[0]
 	}
+	return
+}
+func GetZoneAllKeys(zoneid string) (resmap map[string][]byte, err error) {
+	resmap, err = dbcon.GetKeysContain(zoneid)
 	return
 }
 func RemoveKey(key string, zoneid string) (err error) {
@@ -84,6 +89,8 @@ func NodeDelete(key string) {
 	SaveInfo()
 }
 
+var rwlock sync.RWMutex
+
 // 采用随机数来决定是否储存到硬盘
 func SaveInfo() {
 	rand.Seed(time.Now().UnixNano())
@@ -93,6 +100,7 @@ func SaveInfo() {
 	if rand.Intn(3) == 1 {
 		for zoneid, content := range nodemap {
 			realpath = parentdir + zoneid
+			rwlock.Lock()
 			fe, err := os.OpenFile(realpath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
 			if err == nil {
 				defer fe.Close()
@@ -101,6 +109,7 @@ func SaveInfo() {
 					_, err = fe.Write(resbytes)
 				}
 			}
+			rwlock.Unlock()
 		}
 	}
 	if err != nil {
@@ -115,4 +124,8 @@ func ForceSave() {
 	if err != nil {
 		errorlog.Println(err)
 	}
+}
+func getallkeys() (keysmap map[string][]byte, err error) {
+	keysmap, err = dbcon.GetAllKeys()
+	return
 }

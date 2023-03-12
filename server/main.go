@@ -31,13 +31,13 @@ type ReplayStatus struct {
 var errorlog = toolsbox.LogInit("error", os.Getenv("SCALAR_HOME"+"/logs/error.log"))
 
 func Start() {
-	listener, err := net.Listen("unix", os.Getenv("SCALAR_HOME")+"/tmp/scalar.socket")
+	listener, err := net.Listen("unix", os.Getenv("SCALAR_HOME")+"/tmp/scalar.sock")
 	if err == nil {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 		go func() {
 			<-c
-			os.Remove(os.Getenv("SCALAR_HOME") + "/tmp/scalar.socket")
+			os.Remove(os.Getenv("SCALAR_HOME") + "/tmp/scalar.sock")
 			os.Exit(1)
 		}()
 		for {
@@ -47,7 +47,7 @@ func Start() {
 			}
 		}
 	} else {
-		os.Remove(os.Getenv("SCALAR_HOME") + "/tmp/scalar.socket")
+		os.Remove(os.Getenv("SCALAR_HOME") + "/tmp/scalar.sock")
 	}
 }
 func Process(con net.Conn) {
@@ -55,12 +55,10 @@ func Process(con net.Conn) {
 	var lang int
 	var err error
 	msg := new(Message)
-	rpy := new(ReplayStatus)
 	for {
-		var senddata = make([]byte, 10*basic.MB)
+		rpy := new(ReplayStatus)
 		lang, err = con.Read(buff)
 		if err == nil {
-			fmt.Println("accept mess\n", string(buff[:lang]))
 			err = json.Unmarshal(buff[:lang], msg)
 			if err == nil {
 				if msg.Act != 10 {
@@ -71,10 +69,15 @@ func Process(con net.Conn) {
 						case 2:
 							res, err := gocachedriver.GetKey(msg.Key, zoneid)
 							if err == nil {
-								senddata = []byte(res)
+								rpy.Content = []byte(res)
 							}
 						case 3:
-							err = gocachedriver.Delete(msg.Key, string(msg.Value))
+							err = gocachedriver.Delete(msg.Key, msg.Zone)
+						case 22:
+							res, err := gocachedriver.GetZoneKeys(msg.Zone)
+							if err == nil {
+								rpy.Content = res
+							}
 						default:
 							err = fmt.Errorf("unknown command :-(")
 						}
@@ -87,22 +90,25 @@ func Process(con net.Conn) {
 					}
 				}
 			} else {
-				rpy.StatusCode = 500
-				goto sendtocli
+				// rpy.StatusCode = 500
+				// goto sendtocli
+				// fmt.Println("parse failed")
 			}
 		}
 		if err == nil {
 			rpy.StatusCode = 200
 		} else {
 			rpy.StatusCode = 400
-			senddata = []byte(err.Error())
+			rpy.Content = []byte(err.Error())
 		}
-		rpy.Content = senddata
-	sendtocli:
+		// sendtocli:
 		resbytes, _ := json.Marshal(rpy)
+		// fmt.Println("send msg:", string(resbytes))
 		_, err = con.Write(resbytes)
 		if err != nil {
-			errorlog.Println(err)
+			con.Close()
+			fmt.Println("connection closed")
+			return
 		}
 	}
 }

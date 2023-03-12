@@ -1,6 +1,7 @@
 package gocachedriver
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -36,6 +37,20 @@ func Delete(key, zone string) (err error) {
 	if err == nil {
 		if zoneid, ok := zonemap[zone]; ok {
 			err = RemoveKey(key, zoneid)
+		} else {
+			err = fmt.Errorf("zone dont exist")
+		}
+	}
+	return
+}
+func GetZoneKeys(zone string) (res []byte, err error) {
+	zonemap, err := toolsbox.ParseList(confmappath + "filemap")
+	if err == nil {
+		if zoneid, ok := zonemap[zone]; ok {
+			resmap, err := GetZoneAllKeys(zoneid)
+			if err == nil {
+				res, err = json.Marshal(&resmap)
+			}
 		} else {
 			err = fmt.Errorf("zone dont exist")
 		}
