@@ -75,13 +75,12 @@ func DropZone(zone string) (err error) {
 		if zoneid, ok := zonemap[zone]; ok {
 			if zoneinfo, ok := nodemap[zoneid]; ok && len(zoneinfo) > 0 {
 				//删除区下的所有键
-				for keyname, _ := range zoneinfo {
-					err = Delete(keyname, zoneid)
-					if err != nil {
-						errorlog.Println(err)
-					}
-				}
-				err = nil
+				// for keyname, _ := range zoneinfo {
+				// 	err = Delete(keyname, zoneid)
+				// 	if err != nil {
+				// 		errorlog.Println(err)
+				// 	}
+				// }
 				delete(nodemap, zoneid)
 				delete(zonemap, zone)
 				_, err = toolsbox.FormatList(zonemap, confmappath+"filemap")

@@ -78,9 +78,14 @@ func Process(con net.Conn) {
 							if err == nil {
 								rpy.Content = res
 							}
+						case 30:
+							//delete zone
+							err = gocachedriver.DropZone(msg.Zone)
 						default:
 							err = fmt.Errorf("unknown command :-(")
 						}
+					} else {
+						err = fmt.Errorf("zone %v dont exist", msg.Zone)
 					}
 				} else {
 					if len(msg.Zone) > 0 && !strings.ContainsRune(msg.Zone, ' ') {

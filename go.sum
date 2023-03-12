@@ -13,6 +13,10 @@ github.com/oswaldoooo/gocache-driver v0.0.0-20230312061832-e649b8e167c9 h1:9QW//
 github.com/oswaldoooo/gocache-driver v0.0.0-20230312061832-e649b8e167c9/go.mod h1:Buj42WMfzJvugPjStvOL6/NCkHrbs/dEkg2cuKQNLMo=
 github.com/oswaldoooo/octools v0.0.0-20230307050127-df571cc3429e h1:kH5Hy0aPBz9+G9KKqd0oO1j4TfsgrHBXo9TAjNGA7ao=
 github.com/oswaldoooo/octools v0.0.0-20230307050127-df571cc3429e/go.mod h1:RCEYExIS71OUGjKdwyBhuKOIeHMjcBQxL6ErFpFNw0o=
+github.com/oswaldoooo/octools v0.0.0-20230312070503-c7eb89682cdd h1:ZznYaG+n7tkYyV3EtKC8IP4aDEhVZ5if4XbKbM2kfYc=
+github.com/oswaldoooo/octools v0.0.0-20230312070503-c7eb89682cdd/go.mod h1:RCEYExIS71OUGjKdwyBhuKOIeHMjcBQxL6ErFpFNw0o=
+github.com/oswaldoooo/octools v0.0.0-20230312070802-a1f796f24ffc h1:bGqpN2WPxWjI9DhyMf3jr7HUHOl/9AANp/FKQbCifCA=
+github.com/oswaldoooo/octools v0.0.0-20230312070802-a1f796f24ffc/go.mod h1:RCEYExIS71OUGjKdwyBhuKOIeHMjcBQxL6ErFpFNw0o=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/spf13/cobra v1.6.1 h1:o94oiPyS4KD1mPy2fmcYYHHfCxLqYjJOhGsCHFZtEzA=
 github.com/spf13/cobra v1.6.1/go.mod h1:IOw/AERYS7UzyrGinqmz6HLUo219MORXGxhbaJUqzrY=

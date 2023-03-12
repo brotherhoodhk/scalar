@@ -52,9 +52,23 @@ func RemoveKey(key string, zoneid string) (err error) {
 		return
 	}
 	key = zoneid + key
-	err = dbcon.DeleteKeys(key)
-	if err == nil {
-		NodeDelete(key)
+	if key == "*" {
+		//delete all zone keys
+		resmap, err := dbcon.GetKeysContain(zoneid)
+		if err == nil {
+			keysarr := []string{}
+			for k, _ := range resmap {
+				keysarr = append(keysarr, k)
+			}
+			if len(keysarr) > 0 {
+				err = dbcon.DeleteKeys(keysarr...)
+			}
+		}
+	} else {
+		err = dbcon.DeleteKeys(key)
+		if err == nil {
+			NodeDelete(key)
+		}
 	}
 	return
 }
