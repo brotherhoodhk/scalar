@@ -85,10 +85,10 @@ func Process(con net.Conn) {
 						//进阶功能
 						case 91:
 							//使用默认wordcount计算
-
+							err = DefaultWordCount(msg)
 						case 911:
 							//使用指定wordcount插件计算
-
+							err = CustomWordCount(msg)
 						default:
 							err = fmt.Errorf("unknown command :-(")
 						}

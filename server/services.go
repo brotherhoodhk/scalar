@@ -6,8 +6,10 @@ import (
 	"scal/gocachedriver"
 	"scal/mainbody"
 	"strconv"
+	"strings"
 )
 
+// use default method count words
 func DefaultWordCount(msg *Message) (err error) {
 	zone, filepath := "", ""
 	zoneid := ""
@@ -29,6 +31,8 @@ func DefaultWordCount(msg *Message) (err error) {
 	}
 	return
 }
+
+// use custom method count words
 func CustomWordCount(msg *Message) (err error) {
 	zone, filepath := "", ""
 	usemethodname := ""
@@ -58,10 +62,27 @@ func CustomWordCount(msg *Message) (err error) {
 	}
 	return
 }
-func getfilename(filepath string) (filename string) {
 
+// get filename from filepath.example: filepath /home/brotherhoodhk/jake filename jake
+func getfilename(filepath string) (filename string) {
+	if strings.ContainsRune(filepath, '/') {
+		patternarr := strings.Split(filepath, "/")
+		if len(patternarr) >= 2 {
+			if len(patternarr[len(patternarr)-1]) > 0 {
+				filename = patternarr[len(patternarr)-1]
+			} else {
+				filename = patternarr[len(patternarr)-2]
+			}
+		} else if len(patternarr) == 1 {
+			filename = patternarr[0]
+		}
+	} else {
+		filename = filepath
+	}
 	return
 }
+
+// save wordcount result to database
 func savewordcounts(origin_data map[string]int, zoneid string) {
 	var err error
 	for k, v := range origin_data {
@@ -70,8 +91,11 @@ func savewordcounts(origin_data map[string]int, zoneid string) {
 			errorlog.Println(err)
 		}
 	}
+	gocachedriver.ForceSave()
 	return
 }
+
+// get the target zone's zoneid.if dont exist ,it will auto create
 func getzoneid(zone string) (zoneid string, err error) {
 	var ok bool
 start:
