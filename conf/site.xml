@@ -11,4 +11,7 @@
             <filename></filename>
         </plugin_info>
     </plugins>
+    <paths>
+        <common_path></common_path>
+    </paths>
 </scalar>

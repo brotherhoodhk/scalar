@@ -19,6 +19,11 @@ type confinfo struct {
 		Class    string   `xml:"classname"`
 		FileName string   `xml:"filename"`
 	} `xml:"plugins"`
+	PathInfo pathinfo `xml:"paths"`
+}
+type pathinfo struct {
+	XMLName     xml.Name `xml:"paths"`
+	Common_Path string   `xml:"common_path"`
 }
 
 func init() {
