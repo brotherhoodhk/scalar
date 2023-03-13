@@ -4,9 +4,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"plugin"
 	"scal/basic"
 	"strings"
+
+	"github.com/oswaldoooo/octools/toolsbox"
 )
 
 type basictype interface {
@@ -70,6 +73,10 @@ func init() {
 					fmt.Println(err)
 				}
 			}
+			if _, err = os.Stat(conf.PathInfo.Common_Path); len(conf.PathInfo.Common_Path) > 0 && err == nil {
+				//通用插件目录存在
+
+			}
 		}
 	}
 }
@@ -110,6 +117,33 @@ func loadvalcal(pluginer *plugin.Plugin) (resfuncone func(origin_data map[string
 	sym, err = pluginer.Lookup("GetFinalLeavet")
 	if err == nil {
 		resfunctwo = sym.(func(origin_data map[string][]byte) map[string][]byte)
+	}
+	return
+}
+
+// 读取common_plugins directory
+func readcommonpluginsdir(dirpath string) (err error) {
+	fearr, err := ioutil.ReadDir(dirpath)
+	if err == nil {
+		pluginer := new(plugin.Plugin)
+		for _, ve := range fearr {
+			if strings.Contains(ve.Name(), ".so") {
+				pluginer, err = toolsbox.ScanPluginByName(ve.Name(), dirpath)
+				if err == nil {
+					sym, err := pluginer.Lookup("classname")
+					if err == nil {
+						switch *sym.(*string) {
+						case "fuzzy match":
+							sym, err = pluginer.Lookup("FuzzyMatch")
+							if err == nil {
+								//将插件添加到模糊查询池中
+								basic.FuzzyMatchFunc[strings.Replace(ve.Name(), ".so", "", 1)] = sym.(func(target, tocompare string) bool)
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	return
 }

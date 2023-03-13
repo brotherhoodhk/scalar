@@ -12,6 +12,6 @@
         </plugin_info>
     </plugins>
     <paths>
-        <common_path></common_path>
+        <common_path>/Users/oswaldo/dev/golang/gocache/common_plugins</common_path>
     </paths>
 </scalar>
