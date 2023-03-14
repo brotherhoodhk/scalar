@@ -16,13 +16,18 @@ type basictype interface {
 	int | float64 | string | []string | []int | []float64
 }
 type confinfo struct {
-	XMLName xml.Name `xml:"scalar"`
-	Plugins []struct {
-		XMLName  xml.Name `xml:"plugin_info"`
-		Class    string   `xml:"classname"`
-		FileName string   `xml:"filename"`
-	} `xml:"plugins"`
+	XMLName  xml.Name `xml:"scalar"`
+	Plugins  plugins  `xml:"plugins"`
 	PathInfo pathinfo `xml:"paths"`
+}
+type plugins struct {
+	XMLName xml.Name       `xml:"plugins"`
+	Plugin  []plugins_info `xml:"plugin_info"`
+}
+type plugins_info struct {
+	XMLName  xml.Name `xml:"plugin_info"`
+	Class    string   `xml:"classname"`
+	FileName string   `xml:"filename"`
 }
 type pathinfo struct {
 	XMLName     xml.Name `xml:"paths"`
@@ -39,9 +44,10 @@ func init() {
 		err = xml.Unmarshal(content, conf)
 		if err == nil {
 			fmt.Println("=====start init main zone=====")
-			for _, plugin_info := range conf.Plugins {
+			for _, plugin_info := range conf.Plugins.Plugin {
 				pluginer, err := loadplugins(plugin_info.FileName)
 				if err == nil {
+					fmt.Println("start load plugin >>", plugin_info.FileName)
 					switch strings.ToLower(plugin_info.Class) {
 					//plugin分类，查看是否符合分类
 					case "wordcount":
@@ -65,6 +71,11 @@ func init() {
 								realname = plugin_info.FileName
 							}
 							basic.ValueCalFunc[realname] = &basic.VC{RankFunc: resfuntwo, GetRank: resfunone}
+						}
+					case "additional extension":
+						err = loadaddtionalextension(pluginer)
+						if err != nil {
+							fmt.Println("load plugin", plugin_info.FileName, "failed>>", err)
 						}
 					default:
 						err = fmt.Errorf("dont support class %v", plugin_info.Class)
@@ -121,6 +132,23 @@ func loadvalcal(pluginer *plugin.Plugin) (resfuncone func(origin_data map[string
 	sym, err = pluginer.Lookup("GetFinalLeavet")
 	if err == nil {
 		resfunctwo = sym.(func(origin_data map[string][]byte) map[string][]byte)
+	}
+	return
+}
+
+// 加载外挂插件，实现额外功能
+func loadaddtionalextension(pluginer *plugin.Plugin) (err error) {
+	sym, err := pluginer.Lookup("Act")
+	if err == nil {
+		actcode := *sym.(*int)
+		sym, err := pluginer.Lookup("ROOTPATH")
+		if err == nil {
+			*sym.(*string) = basic.ROOTPATH
+			sym, err := pluginer.Lookup("AddtionalExtension")
+			if err == nil {
+				basic.Extension_Func[actcode] = sym.(func(argsone string, argstwo string, argsthree []byte) (content []byte, typeinfo string, err error))
+			}
+		}
 	}
 	return
 }

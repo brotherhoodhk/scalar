@@ -26,6 +26,7 @@ type Message struct {
 type ReplayStatus struct {
 	Content    []byte `json:"content"`
 	StatusCode int    `json:"code"`
+	Type       string `json:"type"`
 }
 
 var errorlog = toolsbox.LogInit("error", os.Getenv("SCALAR_HOME"+"/logs/error.log"))
@@ -78,6 +79,7 @@ func Process(con net.Conn) {
 							res, err := gocachedriver.GetZoneKeys(msg.Zone)
 							if err == nil {
 								rpy.Content = res
+								rpy.Type = "zonekeys"
 							}
 						case 30:
 							//delete zone
@@ -90,7 +92,15 @@ func Process(con net.Conn) {
 							//使用指定wordcount插件计算
 							err = CustomWordCount(msg)
 						default:
-							err = fmt.Errorf("unknown command :-(")
+							if usefunc, ok := basic.Extension_Func[msg.Act]; ok {
+								res, types, err := usefunc(msg.Key, msg.Zone, msg.Value)
+								if err == nil && res != nil {
+									rpy.Content = res
+									rpy.Type = types
+								}
+							} else {
+								err = fmt.Errorf("unknown command :-(")
+							}
 						}
 					} else {
 						err = fmt.Errorf("zone %v dont exist", msg.Zone)
