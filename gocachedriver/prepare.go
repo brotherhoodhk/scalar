@@ -33,6 +33,7 @@ func init() {
 	if err == nil {
 		siteconf := new(siteconfig)
 		err = xml.Unmarshal(buff, siteconf)
+		fmt.Println("=====start init gocachedriver zone=====")
 		if err == nil && len(siteconf.Cacheinfo.Host) > 0 && len(siteconf.Cacheinfo.Default_DB) > 0 && siteconf.Cacheinfo.Port > 0 {
 			dbcon = driver_tools.New(siteconf.Cacheinfo.Host, siteconf.Cacheinfo.Port, "", siteconf.Cacheinfo.Default_DB)
 			err = dbcon.Connect()

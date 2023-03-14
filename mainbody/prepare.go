@@ -38,6 +38,7 @@ func init() {
 	if err == nil {
 		err = xml.Unmarshal(content, conf)
 		if err == nil {
+			fmt.Println("=====start init main zone=====")
 			for _, plugin_info := range conf.Plugins {
 				pluginer, err := loadplugins(plugin_info.FileName)
 				if err == nil {
@@ -75,7 +76,10 @@ func init() {
 			}
 			if _, err = os.Stat(conf.PathInfo.Common_Path); len(conf.PathInfo.Common_Path) > 0 && err == nil {
 				//通用插件目录存在
-
+				err = readcommonpluginsdir(conf.PathInfo.Common_Path)
+			}
+			if err != nil {
+				fmt.Println("error=>", err)
 			}
 		}
 	}
