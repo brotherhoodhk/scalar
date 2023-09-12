@@ -8,12 +8,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/oswaldoooo/gocache-driver/basics"
+	driver_tools "github.com/oswaldoooo/gocache-driver/basics"
 )
 
-var dbcon *driver_tools.CacheDB
-var MaxLine = 1000
-var Rate = 0.3
+var (
+	dbcon    *driver_tools.CacheDB
+	MaxLine  = 1000
+	Rate     = 0.3
+	Conn_Err = driver_tools.CON_ERR
+)
 
 func SetKey(key, value string, zoneid string) (err error) {
 	if len(zoneid) != 6 {
@@ -133,7 +136,7 @@ func SaveInfo() {
 
 // 手动保存
 func ForceSave() {
-	SaveInfo()
+	go SaveInfo()
 	err := dbcon.Save()
 	if err != nil {
 		errorlog.Println(err)

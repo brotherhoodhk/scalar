@@ -93,3 +93,8 @@ func comparedatastore(origin_key map[string][]byte) {
 		}
 	}
 }
+
+func ReloadDriver() error {
+	dbcon.Close()
+	return dbcon.Connect()
+}

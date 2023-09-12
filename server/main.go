@@ -29,7 +29,8 @@ type ReplayStatus struct {
 	Type       string `json:"type"`
 }
 
-var errorlog = toolsbox.LogInit("error", os.Getenv("SCALAR_HOME"+"/logs/error.log"))
+var errorlog = toolsbox.LogInit("error", os.Getenv("SCALAR_HOME")+"/logs/error.log")
+var debuglog = toolsbox.LogInit("debug", os.Getenv("SCALAR_HOME")+"/logs/running.log")
 
 func Start() {
 	listener, err := net.Listen("unix", os.Getenv("SCALAR_HOME")+"/tmp/scalar.sock")
@@ -41,6 +42,7 @@ func Start() {
 			os.Remove(os.Getenv("SCALAR_HOME") + "/tmp/scalar.sock")
 			os.Exit(1)
 		}()
+		fmt.Printf("running ppid %v,pid %v\n", os.Getppid(), os.Getpid())
 		for {
 			ac, err := listener.Accept()
 			if err == nil {
@@ -52,9 +54,13 @@ func Start() {
 	}
 }
 func Process(con net.Conn) {
-	var buff = make([]byte, 10*basic.MB)
-	var lang int
-	var err error
+	defer con.Close()
+	defer debuglog.Println("connection closed,close process")
+	var (
+		buff = make([]byte, 10*basic.MB)
+		lang int
+		err  error
+	)
 	msg := new(Message)
 	for {
 		rpy := new(ReplayStatus)
@@ -64,19 +70,22 @@ func Process(con net.Conn) {
 			if err == nil {
 				if msg.Act != 10 {
 					if zoneid, ok := gocachedriver.CheckZone(msg.Zone); ok {
+					interact:
 						switch msg.Act {
 						case 1:
 							err = gocachedriver.SetKey(msg.Key, string(msg.Value), zoneid)
 						case 2:
-							res, err := gocachedriver.GetKey(msg.Key, zoneid)
+							var res string
+							res, err = gocachedriver.GetKey(msg.Key, zoneid)
 							if err == nil {
 								rpy.Content = []byte(res)
 							}
 						case 3:
 							err = gocachedriver.Delete(msg.Key, msg.Zone)
 						case 22:
+							var res []byte
 							//得到zone中所有key
-							res, err := gocachedriver.GetZoneKeys(msg.Zone)
+							res, err = gocachedriver.GetZoneKeys(msg.Zone)
 							if err == nil {
 								rpy.Content = res
 								rpy.Type = "zonekeys"
@@ -102,6 +111,17 @@ func Process(con net.Conn) {
 								err = fmt.Errorf("unknown command :-(")
 							}
 						}
+						if err == gocachedriver.Conn_Err {
+							errorlog.Println("[gocache connection error] lost connection with gocache")
+							err = gocachedriver.ReloadDriver()
+							if err == nil {
+								debuglog.Println("gocache reload success!")
+								goto interact
+							} else {
+								debuglog.Println("gocache reload failed")
+								err = gocachedriver.Conn_Err
+							}
+						}
 					} else {
 						err = fmt.Errorf("zone %v dont exist", msg.Zone)
 					}
@@ -117,6 +137,8 @@ func Process(con net.Conn) {
 				// goto sendtocli
 				// fmt.Println("parse failed")
 			}
+		} else {
+			return
 		}
 		if err == nil {
 			rpy.StatusCode = 200
@@ -126,11 +148,9 @@ func Process(con net.Conn) {
 		}
 		// sendtocli:
 		resbytes, _ := json.Marshal(rpy)
-		// fmt.Println("send msg:", string(resbytes))
 		_, err = con.Write(resbytes)
 		if err != nil {
-			con.Close()
-			fmt.Println("connection closed")
+			fmt.Println("[error]", err.Error())
 			return
 		}
 	}

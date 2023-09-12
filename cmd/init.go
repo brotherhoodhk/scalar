@@ -39,8 +39,8 @@ And scalar has many zones,you can put your data in the zone that you want`,
 			if err == nil && len(siteconf.Cacheinfo.Host) > 0 && len(siteconf.Cacheinfo.Default_DB) > 0 && siteconf.Cacheinfo.Port > 0 {
 				dbcon := driver_tools.New(siteconf.Cacheinfo.Host, siteconf.Cacheinfo.Port, "", siteconf.Cacheinfo.Default_DB)
 				err = dbcon.Connect()
-				// defer dbcon.Close()
 				if err == nil {
+					defer dbcon.Close()
 					err = dbcon.CreateDB()
 					if err == nil {
 						err = dbcon.SetKey("version", basic.VERSION)
