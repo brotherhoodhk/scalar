@@ -15,6 +15,8 @@ var ROOTPATH = os.Getenv("SCALAR_HOME")
 var confmappath = ROOTPATH + "/conf/"
 var isinit = false
 var nodemap = make(map[string]map[string]int) //记录每个节点操作次数,zoneid>>{keyname;use count}
+var ClusterDrvier *ClusterDB
+
 type siteconfig struct {
 	XMLName   xml.Name    `xml:"scalar"`
 	Cacheinfo gocacheinfo `xml:"gocache"`
@@ -27,8 +29,17 @@ type gocacheinfo struct {
 }
 
 var errorlog = toolsbox.LogInit("error", ROOTPATH+"/logs/error.log")
+var IsCluster bool
 
-func init() {
+func Init() {
+	if IsCluster {
+		fmt.Println("=====start init gocachedriver zone(cluster edition)=====")
+		err := load_cluster_configure(confmappath + "site-cluster.xml")
+		if err != nil {
+			fmt.Println("[error]", err.Error())
+		}
+		return
+	}
 	buff, err := ioutil.ReadFile(confmappath + "site.xml")
 	if err == nil {
 		siteconf := new(siteconfig)
@@ -97,4 +108,33 @@ func comparedatastore(origin_key map[string][]byte) {
 func ReloadDriver() error {
 	dbcon.Close()
 	return dbcon.Connect()
+}
+
+// cluster configure
+type Cluster_Gocache struct {
+	XMLName xml.Name `xml:"gocache_slave"`
+	Info    ClusterOption
+}
+type Cluster_Config struct {
+	XMLName   xml.Name          `xml:"scalar"`
+	Cacheinfo []Cluster_Gocache `xml:"gocache"`
+}
+
+func load_cluster_configure(pathname string) error {
+	content, err := ioutil.ReadFile(pathname)
+	if err == nil {
+		cnf := new(Cluster_Config)
+		err = xml.Unmarshal(content, cnf)
+		if err == nil {
+			var options []*ClusterOption = make([]*ClusterOption, len(cnf.Cacheinfo))
+			for key, ele := range cnf.Cacheinfo {
+				options[key] = &ele.Info
+			}
+			ClusterDrvier, err = NewClusterDB(options...)
+		}
+	} else {
+		fmt.Println("[error]", err.Error())
+		os.Exit(1)
+	}
+	return err
 }

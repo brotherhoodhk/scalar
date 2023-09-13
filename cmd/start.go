@@ -4,6 +4,8 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"scal/gocachedriver"
+	"scal/mainbody"
 	"scal/server"
 
 	"github.com/spf13/cobra"
@@ -16,13 +18,15 @@ var startCmd = &cobra.Command{
 	Long: `scalar is a cache system,based on gocache. it can clear the useless data when data volume reaches the threshold.
 And scalar has many zones,you can put your data in the zone that you want`,
 	Run: func(cmd *cobra.Command, args []string) {
+		gocachedriver.Init()
+		mainbody.Init()
 		server.Start()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-
+	startCmd.Flags().BoolVar(&gocachedriver.IsCluster, "cluster", false, "--cluster")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

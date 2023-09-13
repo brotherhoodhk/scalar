@@ -34,7 +34,7 @@ type pathinfo struct {
 	Common_Path string   `xml:"common_path"`
 }
 
-func init() {
+func Init() {
 	//识别plugin信息
 	siteconfpath := basic.ROOTPATH + "/conf/site.xml"
 	conf := new(confinfo)

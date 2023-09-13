@@ -14,6 +14,17 @@ import (
 	"github.com/oswaldoooo/octools/toolsbox"
 )
 
+const (
+	CREATE_ZONE     = 10
+	DEL_ZONE        = 30
+	SET_KEY         = 1
+	GET_KEY         = 2
+	DEL_KEY         = 3
+	SET_KEY_CLUSTER = 11
+	GET_KEY_CLUSTER = 12
+	DEL_KEY_CLUSTER = 13
+)
+
 // accept msg
 type Message struct {
 	Zone  string `json:"zone"`
@@ -72,16 +83,26 @@ func Process(con net.Conn) {
 					if zoneid, ok := gocachedriver.CheckZone(msg.Zone); ok {
 					interact:
 						switch msg.Act {
-						case 1:
+						case SET_KEY:
 							err = gocachedriver.SetKey(msg.Key, string(msg.Value), zoneid)
-						case 2:
+						case SET_KEY_CLUSTER:
+							err = gocachedriver.ClusterDrvier.SetKey(msg.Key, string(msg.Value), zoneid)
+						case GET_KEY:
 							var res string
 							res, err = gocachedriver.GetKey(msg.Key, zoneid)
 							if err == nil {
 								rpy.Content = []byte(res)
 							}
-						case 3:
+						case GET_KEY_CLUSTER:
+							var res string
+							res, err = gocachedriver.ClusterDrvier.GetKey(msg.Key, zoneid)
+							if err == nil {
+								rpy.Content = []byte(res)
+							}
+						case DEL_KEY:
 							err = gocachedriver.Delete(msg.Key, msg.Zone)
+						case DEL_KEY_CLUSTER:
+							err = gocachedriver.ClusterDrvier.DelKey(zoneid, msg.Key)
 						case 22:
 							var res []byte
 							//得到zone中所有key
@@ -90,7 +111,7 @@ func Process(con net.Conn) {
 								rpy.Content = res
 								rpy.Type = "zonekeys"
 							}
-						case 30:
+						case DEL_ZONE:
 							//delete zone
 							err = gocachedriver.DropZone(msg.Zone)
 						//进阶功能
